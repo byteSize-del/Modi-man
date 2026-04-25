@@ -1003,10 +1003,10 @@ export default function ModimanGame() {
                       animation: won ? 'none' : 'gameover-glitch 0.3s infinite',
                     }}
                   >
-                    {won ? 'YOU WIN!' : 'GAME OVER'}
+                    {won ? (character === 'modi' ? '🎉 MODI RULES!' : '🎉 RAHUL WINS!') : '💥 YOU GOT CAUGHT!'}
                   </h1>
                   <p className="chunky-text text-xs tracking-[4px] text-center" style={{ color: resultColor, opacity: 0.8 }}>
-                    {(character === 'modi' ? 'MODI' : 'RAHUL')} {won ? 'WINS' : 'LOST'}
+                    {won ? (character === 'modi' ? '✨ LEGEND' : '✨ EPIC GAMER') : '💪 WANNA RETRY?'}
                   </p>
                 </motion.div>
 
@@ -1128,13 +1128,10 @@ export default function ModimanGame() {
                         animation: won ? 'none' : 'gameover-glitch 0.3s infinite',
                       }}
                     >
-                      {won ? 'YOU WIN!' : 'GAME OVER'}
+                      {won ? (character === 'modi' ? '🎉 MODI RULES!' : '🎉 RAHUL WINS!') : '💥 YOU GOT CAUGHT!'}
                     </h1>
                     <p className="chunky-text text-sm tracking-[4px] text-left" style={{ color: resultColor, opacity: 0.8 }}>
-                      {won
-                        ? (character === 'modi' ? 'MODI' : 'RAHUL')
-                        : (character === 'modi' ? 'RAHUL' : 'MODI')
-                      } {won ? 'WINS' : 'WINS'}
+                      {won ? (character === 'modi' ? '✨ LEGEND' : '✨ EPIC GAMER') : '💪 WANNA RETRY?'}
                     </p>
                   </div>
 
