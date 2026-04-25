@@ -722,8 +722,10 @@ export default function ModimanGame() {
                 className="flex flex-col md:flex-row gap-4 mb-6 w-full max-w-lg"
               >
                 {CHARACTERS.map(ch => (
-                  <button
+                  <motion.button
                     key={ch.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setCharacter(ch.id);
                       // Play character selection audio
@@ -737,30 +739,33 @@ export default function ModimanGame() {
                         audio.play().catch(() => {});
                       }
                     }}
-                    className={`neon-btn relative flex-1 py-4 px-4 rounded-xl border-2 transition-all duration-300 gap-3 group overflow-hidden ${
+                    className={`neon-btn relative flex-1 py-3 px-5 rounded-xl border-2 transition-all duration-300 gap-3 group overflow-hidden flex items-center justify-between ${
                       character === ch.id
-                        ? 'bg-black/80 scale-[1.03]'
-                        : 'bg-black/50 border-[#1a1a2e] opacity-60 hover:opacity-100 hover:scale-[1.02]'
+                        ? 'bg-gradient-to-r from-black/80 to-black/60 scale-[1.03]'
+                        : 'bg-black/50 border-[#1a1a2e] opacity-70 hover:opacity-100 hover:scale-[1.02]'
                     }`}
                     style={character === ch.id ? {
                       borderColor: ch.color,
-                      boxShadow: `0 0 20px ${ch.glowColor}, inset 0 0 15px ${ch.glowColor}, 0 8px 25px rgba(255,107,0,0.2)`,
+                      boxShadow: `0 0 20px ${ch.glowColor}, inset 0 0 15px ${ch.glowColor}`,
                     } : {}}
                   >
                     {/* Animated shine effect */}
-                    <div className="absolute -inset-full top-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 -skew-x-12 group-hover:translate-x-full transition-all duration-700" />
+                    <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 -skew-x-12 group-hover:translate-x-full transition-all duration-700" />
                     
-                    {character === ch.id && <ChevronRight size={18} style={{ color: ch.color }} className="animate-pulse" />}
-                    <span className="chunky-text text-xs md:text-sm tracking-wider relative z-10" style={character === ch.id ? { color: ch.color } : { color: '#999' }}>
-                      {ch.name}
-                    </span>
+                    <div className="flex items-center gap-2 relative z-10">
+                      {character === ch.id && <ChevronRight size={16} style={{ color: ch.color }} className="animate-pulse" />}
+                      <span className="chunky-text text-xs md:text-sm tracking-wider" style={character === ch.id ? { color: ch.color } : { color: '#aaa' }}>
+                        {ch.name}
+                      </span>
+                    </div>
+                    
                     <div
-                      className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 transition-transform duration-300 group-hover:scale-110"
+                      className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 transition-transform duration-300 group-hover:scale-110 flex-shrink-0 z-10"
                       style={{ borderColor: ch.color, boxShadow: `0 0 12px ${ch.glowColor}` }}
                     >
                       <img src={ch.img} alt={ch.name} className="w-full h-full object-contain" />
                     </div>
-                  </button>
+                  </motion.button>
                 ))}
               </motion.div>
 
