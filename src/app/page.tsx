@@ -806,148 +806,235 @@ export default function ModimanGame() {
 
       {/* ============== GAME OVER / WIN SCREEN ============== */}
       <AnimatePresence>
-        {screen === 'gameover' && (
-          <motion.div
-            key="gameover"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a0a0a] retro-grid scanline-overlay p-6"
-          >
-            {/* Radial glow */}
-            <div
-              className="absolute inset-0 z-0 pointer-events-none"
-              style={{
-                background: won
-                  ? 'radial-gradient(circle at center, rgba(255,215,0,0.08) 0%, transparent 60%)'
-                  : 'radial-gradient(circle at center, rgba(255,0,68,0.08) 0%, transparent 60%)',
-              }}
-            />
+        {screen === 'gameover' && (() => {
+          // Determine which video & image to show
+          const winnerIsModi = (character === 'modi' && won) || (character === 'rahul' && !won);
+          const videoSrc = winnerIsModi ? '/win/modiwin.mp4' : '/win/rahulwin.mp4';
+          const imageSrc = winnerIsModi ? '/win/winmodi.png' : '/win/winrahul.png';
+          const resultColor = won ? '#FFD700' : '#FF0044';
+          const resultGlow = won ? 'rgba(255,215,0,0.4)' : 'rgba(255,0,68,0.4)';
 
-            <div className="relative z-10 flex flex-col items-center gap-6 max-w-md w-full">
-              {/* Result text */}
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', bounce: 0.4, duration: 0.6 }}
-                className="flex flex-col items-center gap-2"
-              >
-                <h1
-                  className="text-3xl md:text-4xl font-bold tracking-tight"
-                  style={{
-                    color: won ? '#FFD700' : '#FF0044',
-                    textShadow: won
-                      ? '0 0 20px rgba(255,215,0,0.6), 0 0 40px rgba(255,215,0,0.3)'
-                      : '0 0 20px rgba(255,0,68,0.6), 0 0 40px rgba(255,0,68,0.3)',
-                    animation: won ? 'none' : 'gameover-glitch 0.3s infinite',
-                  }}
-                >
-                  {won ? 'YOU WIN!' : 'GAME OVER'}
-                </h1>
-                <p className="text-sm tracking-[4px]" style={{ color: won ? '#FFD700' : '#FF0044', opacity: 0.8 }}>
-                  {won
-                    ? (character === 'modi' ? 'MODI' : 'RAHUL')
-                    : (character === 'modi' ? 'RAHUL' : 'MODI')
-                  } {won ? 'WINS' : 'WINS'}
-                </p>
-              </motion.div>
-
-              {/* Video + Character photo */}
-              <motion.div
-                initial={{ y: 20, opacity: 0, rotate: -5 }}
-                animate={{ y: 0, opacity: 1, rotate: 3 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="relative w-56 h-40 md:w-72 md:h-52 rounded-2xl border-3 overflow-hidden"
+          return (
+            <motion.div
+              key="gameover"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a] retro-grid scanline-overlay p-4 md:p-6"
+            >
+              {/* Radial glow */}
+              <div
+                className="absolute inset-0 z-0 pointer-events-none"
                 style={{
-                  borderColor: won ? '#FFD700' : '#FF0044',
-                  boxShadow: won
-                    ? '0 0 20px rgba(255,215,0,0.4)'
-                    : '0 0 20px rgba(255,0,68,0.4)',
+                  background: won
+                    ? 'radial-gradient(circle at center, rgba(255,215,0,0.08) 0%, transparent 60%)'
+                    : 'radial-gradient(circle at center, rgba(255,0,68,0.08) 0%, transparent 60%)',
                 }}
-              >
-                {/* Background: static image as fallback */}
-                <img
-                  src={won
-                    ? (character === 'modi' ? '/win/winmodi.png' : '/win/winrahul.png')
-                    : (character === 'modi' ? '/win/winrahul.png' : '/win/winmodi.png')
-                  }
-                  alt="Result"
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                {/* Foreground: video overlay */}
-                <video
-                  src={won
-                    ? (character === 'modi' ? '/win/modiwin.mp4' : '/win/rahulwin.mp4')
-                    : (character === 'modi' ? '/win/rahulwin.mp4' : '/win/modiwin.mp4')
-                  }
-                  autoPlay
-                  loop
-                  playsInline
-                  muted={isMuted}
-                  className="absolute inset-0 w-full h-full object-cover z-10"
-                />
-                {won && (
-                  <div className="absolute bottom-1 right-1 z-20">
-                    <Trophy size={18} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
-                  </div>
-                )}
-              </motion.div>
+              />
 
-              {/* Score */}
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.4 }}
-                className="flex flex-col items-center gap-1"
-              >
-                <span className="text-[8px] tracking-[4px] text-[#FF6B00]/60 animate-pulse">FINAL SCORE</span>
-                <span className="text-3xl md:text-4xl font-bold text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                  {score.toString().padStart(6, '0')}
-                </span>
-              </motion.div>
-
-              {/* Buttons */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                className="flex flex-col gap-3 w-full"
-              >
-                <button
-                  onClick={startGame}
-                  className="neon-btn w-full py-4 rounded-xl border-2 bg-black text-[#FFD700] text-sm tracking-wider gap-2"
-                  style={{
-                    borderColor: charColor,
-                    boxShadow: `0 0 12px ${charGlow}, inset 0 0 12px ${charGlow}`,
-                  }}
+              {/* ── MOBILE layout: stacked ── */}
+              <div className="md:hidden relative z-10 flex flex-col items-center gap-5 w-full max-w-sm">
+                {/* Result text */}
+                <motion.div
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', bounce: 0.4, duration: 0.6 }}
+                  className="flex flex-col items-center gap-1"
                 >
-                  <RotateCcw size={18} /> PLAY AGAIN
-                </button>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => { resetGame(); setScreen('menu'); }}
-                    className="neon-btn flex-1 py-3 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 text-xs tracking-wider gap-2 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
+                  <h1
+                    className="text-2xl font-bold tracking-tight"
+                    style={{
+                      color: resultColor,
+                      textShadow: `0 0 20px ${resultColor}99, 0 0 40px ${resultColor}44`,
+                      animation: won ? 'none' : 'gameover-glitch 0.3s infinite',
+                    }}
                   >
-                    <Home size={16} /> MENU
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="neon-btn flex-1 py-3 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 text-xs tracking-wider gap-2 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
-                  >
-                    <Share2 size={16} /> SHARE
-                  </button>
-                </div>
-              </motion.div>
-            </div>
+                    {won ? 'YOU WIN!' : 'GAME OVER'}
+                  </h1>
+                  <p className="text-xs tracking-[4px]" style={{ color: resultColor, opacity: 0.8 }}>
+                    {(character === 'modi' ? 'MODI' : 'RAHUL')} {won ? 'WINS' : 'LOST'}
+                  </p>
+                </motion.div>
 
-            {/* Disclaimer */}
-            <p className="absolute bottom-3 text-[7px] text-white/20 italic text-center z-10">
-              This game is for just fun. Not related to any political party or person.
-            </p>
-          </motion.div>
-        )}
+                {/* Video 9:16 on mobile */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="relative w-full max-w-[220px] rounded-2xl border-2 overflow-hidden"
+                  style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
+                >
+                  <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
+                    <img src={imageSrc} alt="Result" className="absolute inset-0 w-full h-full object-cover" />
+                    <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10" />
+                  </div>
+                  {won && (
+                    <div className="absolute bottom-2 right-2 z-20">
+                      <Trophy size={16} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Score */}
+                <motion.div
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.4 }}
+                  className="flex flex-col items-center gap-1"
+                >
+                  <span className="text-[8px] tracking-[4px] text-[#FF6B00]/60 animate-pulse">FINAL SCORE</span>
+                  <span className="text-2xl font-bold text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                    {score.toString().padStart(6, '0')}
+                  </span>
+                </motion.div>
+
+                {/* Buttons */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                  className="flex flex-col gap-2.5 w-full"
+                >
+                  <button
+                    onClick={startGame}
+                    className="neon-btn w-full py-3.5 rounded-xl border-2 bg-black text-[#FFD700] text-xs tracking-wider gap-2"
+                    style={{ borderColor: charColor, boxShadow: `0 0 12px ${charGlow}, inset 0 0 12px ${charGlow}` }}
+                  >
+                    <RotateCcw size={16} /> PLAY AGAIN
+                  </button>
+                  <div className="flex gap-2.5">
+                    <button
+                      onClick={() => { resetGame(); setScreen('menu'); }}
+                      className="neon-btn flex-1 py-3 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 text-[10px] tracking-wider gap-1.5 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
+                    >
+                      <Home size={14} /> MENU
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="neon-btn flex-1 py-3 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 text-[10px] tracking-wider gap-1.5 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
+                    >
+                      <Share2 size={14} /> SHARE
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* ── DESKTOP layout: two-column (video left, info right) ── */}
+              <div className="hidden md:flex relative z-10 w-full max-w-4xl items-stretch gap-8">
+                {/* LEFT — 9:16 Video */}
+                <motion.div
+                  initial={{ x: -40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                  className="w-[280px] lg:w-[320px] flex-shrink-0"
+                >
+                  <div
+                    className="relative w-full rounded-2xl border-2 overflow-hidden"
+                    style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
+                  >
+                    <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
+                      <img src={imageSrc} alt="Result" className="absolute inset-0 w-full h-full object-cover" />
+                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10 grayscale-[0.2]" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
+                      {won && (
+                        <div className="absolute bottom-3 right-3 z-30">
+                          <Trophy size={22} className="text-[#FFD700] drop-shadow-[0_0_8px_#000]" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* RIGHT — Info + image + buttons */}
+                <motion.div
+                  initial={{ x: 40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.6 }}
+                  className="flex-1 flex flex-col items-start justify-between gap-5 py-2"
+                >
+                  {/* Result header */}
+                  <div className="flex flex-col items-start gap-2">
+                    <h1
+                      className="text-3xl lg:text-4xl font-bold tracking-tight"
+                      style={{
+                        color: resultColor,
+                        textShadow: `0 0 20px ${resultColor}99, 0 0 40px ${resultColor}44`,
+                        animation: won ? 'none' : 'gameover-glitch 0.3s infinite',
+                      }}
+                    >
+                      {won ? 'YOU WIN!' : 'GAME OVER'}
+                    </h1>
+                    <p className="text-sm tracking-[4px]" style={{ color: resultColor, opacity: 0.8 }}>
+                      {won
+                        ? (character === 'modi' ? 'MODI' : 'RAHUL')
+                        : (character === 'modi' ? 'RAHUL' : 'MODI')
+                      } {won ? 'WINS' : 'WINS'}
+                    </p>
+                  </div>
+
+                  {/* Win image + Score side by side */}
+                  <div className="flex flex-row items-end gap-6">
+                    <motion.div
+                      initial={{ rotate: -5, opacity: 0 }}
+                      animate={{ rotate: 3, opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.4 }}
+                      className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-2xl border-2 overflow-hidden flex-shrink-0"
+                      style={{ borderColor: resultColor, boxShadow: `0 0 20px ${resultGlow}` }}
+                    >
+                      <img src={imageSrc} alt="Winner" className="w-full h-full object-cover" />
+                      {won && (
+                        <div className="absolute bottom-1 right-1">
+                          <Trophy size={18} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
+                        </div>
+                      )}
+                    </motion.div>
+                    <div className="flex flex-col items-start gap-2">
+                      <span className="text-[9px] tracking-[4px] text-[#FF6B00]/60 animate-pulse">FINAL SCORE</span>
+                      <span className="text-4xl lg:text-5xl font-bold text-white tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                        {score.toString().padStart(6, '0')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full border-t border-white/10" />
+
+                  {/* Buttons */}
+                  <div className="flex flex-row gap-3 w-full">
+                    <button
+                      onClick={startGame}
+                      className="neon-btn flex-1 py-4 rounded-xl border-2 bg-black text-[#FFD700] text-xs tracking-wider gap-2"
+                      style={{ borderColor: charColor, boxShadow: `0 0 12px ${charGlow}, inset 0 0 12px ${charGlow}` }}
+                    >
+                      <RotateCcw size={16} /> PLAY AGAIN
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="neon-btn flex-1 py-4 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 text-xs tracking-wider gap-2 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
+                    >
+                      <Share2 size={16} /> SHARE
+                    </button>
+                    <button
+                      onClick={() => { resetGame(); setScreen('menu'); }}
+                      className="neon-btn py-4 px-4 rounded-xl border-2 border-[#1a1a2e] bg-black/80 text-gray-400 hover:border-[#FFD700]/50 hover:text-[#FFD700]"
+                    >
+                      <Home size={20} />
+                    </button>
+                  </div>
+
+                  <p className="text-[8px] text-white/20 tracking-widest">
+                    modiman-xi.vercel.app · code.itzpa1
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Disclaimer */}
+              <p className="absolute bottom-2 text-[7px] text-white/20 italic text-center z-10">
+                This game is for just fun. Not related to any political party or person.
+              </p>
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* ============== SHARE SHEET ============== */}
