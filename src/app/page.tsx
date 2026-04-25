@@ -131,6 +131,11 @@ export default function ModimanGame() {
   const [won, setWon] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
+  // Audio/Video refs
+  const charAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isMutedRef = useRef(isMuted);
+  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+
   // Game refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mazeRef = useRef<number[][]>(INITIAL_MAZE.map(r => [...r]));
@@ -607,7 +612,19 @@ export default function ModimanGame() {
                 {CHARACTERS.map(ch => (
                   <button
                     key={ch.id}
-                    onClick={() => setCharacter(ch.id)}
+                    onClick={() => {
+                      setCharacter(ch.id);
+                      // Play character selection audio
+                      if (charAudioRef.current) {
+                        charAudioRef.current.pause();
+                        charAudioRef.current.currentTime = 0;
+                      }
+                      if (!isMuted) {
+                        const audio = new Audio(ch.id === 'modi' ? '/audio/wah-modiji-wah.mp3' : '/audio/maja-aaya.mp3');
+                        charAudioRef.current = audio;
+                        audio.play().catch(() => {});
+                      }
+                    }}
                     className={`neon-btn relative flex-1 py-4 px-4 rounded-xl border-2 transition-all duration-200 gap-3 ${
                       character === ch.id
                         ? 'bg-black/80 scale-[1.03]'
@@ -836,12 +853,12 @@ export default function ModimanGame() {
                 </p>
               </motion.div>
 
-              {/* Character photo */}
+              {/* Video + Character photo */}
               <motion.div
                 initial={{ y: 20, opacity: 0, rotate: -5 }}
                 animate={{ y: 0, opacity: 1, rotate: 3 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl border-3 overflow-hidden"
+                className="relative w-56 h-40 md:w-72 md:h-52 rounded-2xl border-3 overflow-hidden"
                 style={{
                   borderColor: won ? '#FFD700' : '#FF0044',
                   boxShadow: won
@@ -849,16 +866,29 @@ export default function ModimanGame() {
                     : '0 0 20px rgba(255,0,68,0.4)',
                 }}
               >
+                {/* Background: static image as fallback */}
                 <img
                   src={won
                     ? (character === 'modi' ? '/win/winmodi.png' : '/win/winrahul.png')
                     : (character === 'modi' ? '/win/winrahul.png' : '/win/winmodi.png')
                   }
                   alt="Result"
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Foreground: video overlay */}
+                <video
+                  src={won
+                    ? (character === 'modi' ? '/win/modiwin.mp4' : '/win/rahulwin.mp4')
+                    : (character === 'modi' ? '/win/rahulwin.mp4' : '/win/modiwin.mp4')
+                  }
+                  autoPlay
+                  loop
+                  playsInline
+                  muted={isMuted}
+                  className="absolute inset-0 w-full h-full object-cover z-10"
                 />
                 {won && (
-                  <div className="absolute bottom-1 right-1">
+                  <div className="absolute bottom-1 right-1 z-20">
                     <Trophy size={18} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
                   </div>
                 )}
