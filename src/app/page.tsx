@@ -136,6 +136,7 @@ export default function ModimanGame() {
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const gameOverAudioRef = useRef<HTMLAudioElement | null>(null);
   const crashAudioRef = useRef<HTMLAudioElement | null>(null);
+  const gameOverVideoRef = useRef<HTMLVideoElement | null>(null);
   const isMutedRef = useRef(isMuted);
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
 
@@ -261,6 +262,20 @@ export default function ModimanGame() {
       gameOverAudioRef.current = null;
     }
   }, [screen, isMuted]);
+
+  // ============== GAMEOVER VIDEO PLAYBACK ==============
+  useEffect(() => {
+    if (screen === 'gameover' && gameOverVideoRef.current) {
+      // Reset video and play immediately
+      gameOverVideoRef.current.currentTime = 0;
+      const playPromise = gameOverVideoRef.current.play();
+      if (playPromise) {
+        playPromise.catch(() => {
+          // Autoplay may be blocked; video will still play on first user interaction
+        });
+      }
+    }
+  }, [screen]);
 
   // ============== GAME LOGIC ==============
   const moveEntity = useCallback((x: number, y: number, dir: Direction | null) => {
@@ -395,7 +410,7 @@ export default function ModimanGame() {
 
       // Win check
       if (!mazeRef.current.some(row => row.includes(0) || row.includes(3))) {
-        sound.play('win');
+        // Video audio provides victory feedback, no synth needed
         setWon(true);
         setScreen('gameover');
         clearInterval(loop);
@@ -952,7 +967,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover" />
+                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   </div>
                   {/* Win PNG on RIGHT */}
@@ -1029,7 +1044,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover z-10" />
+                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
