@@ -266,13 +266,21 @@ export default function ModimanGame() {
   // ============== GAMEOVER VIDEO PLAYBACK ==============
   useEffect(() => {
     if (screen === 'gameover' && gameOverVideoRef.current) {
-      // Reset video and play immediately
-      gameOverVideoRef.current.currentTime = 0;
-      const playPromise = gameOverVideoRef.current.play();
-      if (playPromise) {
-        playPromise.catch(() => {
-          // Autoplay may be blocked; video will still play on first user interaction
-        });
+      const video = gameOverVideoRef.current;
+      // Ensure video is loaded and ready to play
+      video.currentTime = 0;
+      video.load(); // Force load
+      
+      // Play immediately
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Video playing successfully
+          })
+          .catch((err) => {
+            // Autoplay blocked by browser, will play on first user interaction
+          });
       }
     }
   }, [screen]);
@@ -379,9 +387,11 @@ export default function ModimanGame() {
       // Collision
       const hit = gList.find(g => g.x === p.x && g.y === p.y);
       if (hit) {
-        // Play character-specific crash audio
-        if (!isMutedRef.current) {
-          // Stop previous crash audio if still playing
+        // Don't play sounds if this is the last life (gameover screen video will provide audio)
+        const isLastLife = livesRef.current === 1;
+        
+        if (!isLastLife && !isMutedRef.current) {
+          // Play character-specific crash audio only if not on last life
           if (crashAudioRef.current) {
             crashAudioRef.current.pause();
             crashAudioRef.current.currentTime = 0;
@@ -391,8 +401,19 @@ export default function ModimanGame() {
           crashAudio.volume = 0.7;
           crashAudioRef.current = crashAudio;
           crashAudio.play().catch(() => {});
+          sound.play('death');
+        } else if (isLastLife) {
+          // Stop all audio immediately for clean gameover screen
+          if (crashAudioRef.current) {
+            crashAudioRef.current.pause();
+            crashAudioRef.current.currentTime = 0;
+          }
+          if (bgMusicRef.current) {
+            bgMusicRef.current.pause();
+            bgMusicRef.current.currentTime = 0;
+          }
         }
-        sound.play('death');
+        
         if (livesRef.current > 1) {
           livesRef.current--;
           setLives(livesRef.current);
@@ -967,7 +988,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover" />
+                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="metadata" volume={1} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   </div>
                   {/* Win PNG on RIGHT */}
@@ -1044,7 +1065,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover z-10" />
+                      <video ref={gameOverVideoRef} src={videoSrc} autoPlay playsInline preload="metadata" volume={1} className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
