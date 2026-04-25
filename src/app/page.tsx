@@ -131,8 +131,10 @@ export default function ModimanGame() {
   const [won, setWon] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
-  // Audio/Video refs
+  // Audio refs
   const charAudioRef = useRef<HTMLAudioElement | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const gameOverAudioRef = useRef<HTMLAudioElement | null>(null);
   const isMutedRef = useRef(isMuted);
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
 
@@ -182,6 +184,72 @@ export default function ModimanGame() {
       localStorage.setItem('modiman_hi', score.toString());
     }
   }, [score, hiScore]);
+
+  // ============== BACKGROUND MUSIC ==============
+  useEffect(() => {
+    if (screen === 'playing' && !isMuted) {
+      // Start bg music
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause();
+        bgMusicRef.current = null;
+      }
+      const audio = new Audio('/audio/bg_music.mp3');
+      audio.loop = true;
+      audio.volume = 0.4;
+      bgMusicRef.current = audio;
+      audio.play().catch(() => {});
+    }
+
+    // Stop bg music when leaving game screen
+    if (screen !== 'playing' && bgMusicRef.current) {
+      bgMusicRef.current.pause();
+      bgMusicRef.current.currentTime = 0;
+      bgMusicRef.current = null;
+    }
+  }, [screen, isMuted]);
+
+  // Stop bg music on mute
+  useEffect(() => {
+    if (isMuted && bgMusicRef.current) {
+      bgMusicRef.current.pause();
+    } else if (!isMuted && screen === 'playing' && bgMusicRef.current) {
+      bgMusicRef.current.play().catch(() => {});
+    }
+  }, [isMuted, screen]);
+
+  // ============== GAME OVER AUDIO ==============
+  useEffect(() => {
+    if (screen === 'gameover') {
+      // Stop bg music first
+      if (bgMusicRef.current) {
+        bgMusicRef.current.pause();
+        bgMusicRef.current.currentTime = 0;
+        bgMusicRef.current = null;
+      }
+
+      // Play game over audio
+      if (gameOverAudioRef.current) {
+        gameOverAudioRef.current.pause();
+        gameOverAudioRef.current = null;
+      }
+
+      if (!isMuted) {
+        const audioSrc = won ? '/audio/laure-na-bhujjam-x-modi.mp3' : '/audio/khatam.mp3';
+        const audio = new Audio(audioSrc);
+        audio.loop = true;
+        audio.volume = 0.6;
+        gameOverAudioRef.current = audio;
+        audio.play().catch(() => {});
+      }
+    }
+
+    // Cleanup game over audio when leaving
+    if (screen !== 'gameover' && gameOverAudioRef.current) {
+      gameOverAudioRef.current.pause();
+      gameOverAudioRef.current.currentTime = 0;
+      gameOverAudioRef.current = null;
+    }
+  }, [screen, won, isMuted]);
 
   // ============== GAME LOGIC ==============
   const moveEntity = useCallback((x: number, y: number, dir: Direction | null) => {
@@ -350,14 +418,12 @@ export default function ModimanGame() {
           const cy = y * CELL;
 
           if (cell === 1) {
-            // Wall
             ctx.fillStyle = '#0d1b2a';
             ctx.fillRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
             ctx.strokeStyle = '#1b3a5c';
             ctx.lineWidth = 2;
             ctx.strokeRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
 
-            // Add subtle glow border on walls that face paths
             const hasPathNeighbor = (nx: number, ny: number) => {
               if (nx < 0 || nx >= GRID.cols || ny < 0 || ny >= GRID.rows) return false;
               return maze[ny][nx] !== 1;
@@ -369,7 +435,6 @@ export default function ModimanGame() {
           }
 
           if (cell === 4) {
-            // Ghost pen
             ctx.fillStyle = '#1a0a0a';
             ctx.fillRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
             ctx.strokeStyle = 'rgba(255,0,68,0.3)';
@@ -378,7 +443,6 @@ export default function ModimanGame() {
           }
 
           if (cell === 0) {
-            // Dot
             ctx.beginPath();
             ctx.arc(cx + CELL / 2, cy + CELL / 2, 4, 0, Math.PI * 2);
             ctx.fillStyle = '#FFD700';
@@ -390,7 +454,6 @@ export default function ModimanGame() {
           }
 
           if (cell === 3) {
-            // Power pellet
             const pulse = 0.6 + 0.4 * Math.sin(frame * 0.08);
             ctx.beginPath();
             ctx.arc(cx + CELL / 2, cy + CELL / 2, 14 * pulse + 6, 0, Math.PI * 2);
@@ -401,7 +464,6 @@ export default function ModimanGame() {
             ctx.fill();
             ctx.shadowBlur = 0;
 
-            // Draw bonus image
             const bImg = imagesRef.current['/characters/8.png'];
             if (bImg?.complete && bImg.naturalWidth > 0) {
               ctx.drawImage(bImg, cx + 6, cy + 6, CELL - 12, CELL - 12);
@@ -418,7 +480,6 @@ export default function ModimanGame() {
           ? imagesRef.current[`/characters/rahul/${i === 0 ? 1 : i === 1 ? 2 : 3}.png`]
           : imagesRef.current[`/characters/modi/${i === 0 ? 5 : i === 1 ? 6 : 7}.png`];
 
-        // Glow
         ctx.shadowColor = GHOST_DATA[i].color;
         ctx.shadowBlur = 15;
         ctx.beginPath();
@@ -436,7 +497,6 @@ export default function ModimanGame() {
           ctx.restore();
         }
 
-        // Direction indicator
         ctx.fillStyle = GHOST_DATA[i].color;
         ctx.shadowColor = GHOST_DATA[i].color;
         ctx.shadowBlur = 4;
@@ -458,7 +518,6 @@ export default function ModimanGame() {
         : imagesRef.current['/characters/rahul/3.png'];
       const pColor = character === 'modi' ? '#FF6B00' : '#00E5FF';
 
-      // Player glow
       ctx.shadowColor = pColor;
       ctx.shadowBlur = 20;
       ctx.beginPath();
@@ -476,7 +535,6 @@ export default function ModimanGame() {
         ctx.restore();
       }
 
-      // Player ring
       ctx.beginPath();
       ctx.arc(px + CELL / 2, py + CELL / 2, 28, 0, Math.PI * 2);
       ctx.strokeStyle = pColor;
@@ -535,7 +593,7 @@ export default function ModimanGame() {
   const charGlow = character === 'modi' ? 'rgba(255,107,0,0.6)' : 'rgba(0,229,255,0.6)';
 
   return (
-    <div className="fixed inset-0 h-[100dvh] bg-[#0a0a0a] text-white overflow-hidden select-none" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+    <div className="fixed inset-0 h-[100dvh] bg-[#0a0a0a] text-white overflow-hidden select-none" style={{ fontFamily: 'var(--font-bungee), var(--font-geist-mono), sans-serif' }}>
 
       {/* ============== MENU SCREEN ============== */}
       <AnimatePresence>
@@ -596,7 +654,7 @@ export default function ModimanGame() {
                 {/* Title */}
                 <div className="flex flex-col items-center">
                   <h1 className="glitch" data-text="MODIMAN">MODIMAN</h1>
-                  <p className="text-sm md:text-base tracking-[8px] md:tracking-[12px] text-[#FF6B00]/80 mt-2" style={{ textShadow: '0 0 10px rgba(255,107,0,0.5)' }}>
+                  <p className="chunky-text text-sm md:text-lg tracking-[8px] md:tracking-[12px] text-[#FF6B00]/80 mt-3" style={{ textShadow: '0 0 10px rgba(255,107,0,0.5)' }}>
                     KHELA HOBE
                   </p>
                 </div>
@@ -636,7 +694,7 @@ export default function ModimanGame() {
                     } : {}}
                   >
                     {character === ch.id && <ChevronRight size={18} style={{ color: ch.color }} />}
-                    <span className="text-xs md:text-sm tracking-wider" style={character === ch.id ? { color: ch.color } : { color: '#999' }}>
+                    <span className="chunky-text text-xs md:text-sm tracking-wider" style={character === ch.id ? { color: ch.color } : { color: '#999' }}>
                       {ch.name}
                     </span>
                     <div
@@ -673,18 +731,18 @@ export default function ModimanGame() {
 
             {/* Footer */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1 w-full p-2">
-              <p className="text-[9px] md:text-[10px] text-white/50 text-center">
+              <p className="text-[9px] md:text-[10px] text-white/50 text-center" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                 Developed by <a href="https://github.com/itzpa1" target="_blank" rel="noopener noreferrer" className="text-[#FFD700]/70 hover:text-[#FFD700] hover:underline">code.itzpa1</a>
               </p>
               <a
                 href="https://github.com/itzpa1/modiman"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[9px] md:text-[10px] text-[#FFD700]/50 hover:text-[#FFD700] transition-colors flex items-center gap-1.5"
+                className="text-[9px] md:text-[10px] text-[#FFD700]/50 hover:text-[#FFD700] transition-colors flex items-center gap-1.5" style={{ fontFamily: 'var(--font-geist-mono)' }}
               >
                 <Github size={12} /> Star on GitHub <Star size={12} className="animate-pulse" />
               </a>
-              <p className="text-[8px] text-white/25 italic text-center mt-1">
+              <p className="text-[8px] text-white/25 italic text-center mt-1" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                 This game is for just fun. Not related to any political party or person.
               </p>
             </div>
@@ -707,7 +765,7 @@ export default function ModimanGame() {
             <div ref={headerRef} className="flex items-center justify-between px-4 py-2 flex-shrink-0 z-50">
               <button
                 onClick={() => setScreen('menu')}
-                className="text-gray-500 hover:text-[#FFD700] transition-colors text-xs tracking-wider"
+                className="chunky-text text-gray-500 hover:text-[#FFD700] transition-colors text-xs tracking-wider"
               >
                 &lt; BACK
               </button>
@@ -723,8 +781,8 @@ export default function ModimanGame() {
             <div ref={scoreBarRef} className="flex flex-col items-center flex-shrink-0 px-4 py-1 z-50">
               <div className="flex w-full max-w-[600px] items-center justify-between">
                 <div className="flex flex-col items-center">
-                  <span className="text-[8px] text-[#FF6B00]/70 tracking-wider">SCORE</span>
-                  <span className="text-xs text-white tabular-nums">{score.toString().padStart(6, '0')}</span>
+                  <span className="chunky-text text-[8px] text-[#FF6B00]/70 tracking-wider">SCORE</span>
+                  <span className="chunky-text text-sm text-white tabular-nums">{score.toString().padStart(6, '0')}</span>
                 </div>
                 <div className="flex gap-1">
                   {[...Array(3)].map((_, i) => (
@@ -736,8 +794,8 @@ export default function ModimanGame() {
                   ))}
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-[8px] text-[#00E5FF]/70 tracking-wider">HI-SCORE</span>
-                  <span className="text-xs text-white tabular-nums">{hiScore.toString().padStart(6, '0')}</span>
+                  <span className="chunky-text text-[8px] text-[#00E5FF]/70 tracking-wider">HI-SCORE</span>
+                  <span className="chunky-text text-sm text-white tabular-nums">{hiScore.toString().padStart(6, '0')}</span>
                 </div>
               </div>
             </div>
@@ -778,7 +836,7 @@ export default function ModimanGame() {
                   </button>
                 </div>
                 <div className="col-start-2 row-start-2 flex items-center justify-center">
-                  <div className="h-5 w-5 rounded-full" style={{ backgroundColor: `${charColor}33`, boxShadow: `0 0_8px ${charGlow}` }} />
+                  <div className="h-5 w-5 rounded-full" style={{ backgroundColor: `${charColor}33`, boxShadow: `0 0 8px ${charGlow}` }} />
                 </div>
                 <div className="col-start-3 row-start-2">
                   <button
@@ -834,7 +892,7 @@ export default function ModimanGame() {
               />
 
               {/* ── MOBILE layout: stacked ── */}
-              <div className="md:hidden relative z-10 flex flex-col items-center gap-5 w-full max-w-sm">
+              <div className="md:hidden relative z-10 flex flex-col items-center gap-4 w-full max-w-sm">
                 {/* Result text */}
                 <motion.div
                   initial={{ scale: 0.5, opacity: 0 }}
@@ -843,7 +901,7 @@ export default function ModimanGame() {
                   className="flex flex-col items-center gap-1"
                 >
                   <h1
-                    className="text-2xl font-bold tracking-tight"
+                    className="chunky-text text-3xl tracking-wider text-center"
                     style={{
                       color: resultColor,
                       textShadow: `0 0 20px ${resultColor}99, 0 0 40px ${resultColor}44`,
@@ -852,28 +910,41 @@ export default function ModimanGame() {
                   >
                     {won ? 'YOU WIN!' : 'GAME OVER'}
                   </h1>
-                  <p className="text-xs tracking-[4px]" style={{ color: resultColor, opacity: 0.8 }}>
+                  <p className="chunky-text text-xs tracking-[4px] text-center" style={{ color: resultColor, opacity: 0.8 }}>
                     {(character === 'modi' ? 'MODI' : 'RAHUL')} {won ? 'WINS' : 'LOST'}
                   </p>
                 </motion.div>
 
-                {/* Video 9:16 on mobile */}
+                {/* Video 9:16 + Win PNG side by side on mobile */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
-                  className="relative w-full max-w-[220px] rounded-2xl border-2 overflow-hidden"
-                  style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
+                  className="flex gap-3 w-full items-center justify-center"
                 >
-                  <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                    <img src={imageSrc} alt="Result" className="absolute inset-0 w-full h-full object-cover" />
-                    <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10" />
-                  </div>
-                  {won && (
-                    <div className="absolute bottom-2 right-2 z-20">
-                      <Trophy size={16} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
+                  {/* Video on LEFT */}
+                  <div
+                    className="relative w-[45%] max-w-[180px] rounded-2xl border-2 overflow-hidden flex-shrink-0"
+                    style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
+                  >
+                    <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
+                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
-                  )}
+                  </div>
+                  {/* Win PNG on RIGHT */}
+                  <div
+                    className="relative w-[45%] max-w-[180px] rounded-2xl border-2 overflow-hidden flex-shrink-0"
+                    style={{ borderColor: resultColor, boxShadow: `0 0 15px ${resultGlow}` }}
+                  >
+                    <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
+                      <img src={imageSrc} alt="Result" className="absolute inset-0 w-full h-full object-cover" />
+                    </div>
+                    {won && (
+                      <div className="absolute bottom-2 right-2 z-20">
+                        <Trophy size={16} className="text-[#FFD700] drop-shadow-[0_0_5px_#000]" />
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
 
                 {/* Score */}
@@ -883,8 +954,8 @@ export default function ModimanGame() {
                   transition={{ delay: 0.4, duration: 0.4 }}
                   className="flex flex-col items-center gap-1"
                 >
-                  <span className="text-[8px] tracking-[4px] text-[#FF6B00]/60 animate-pulse">FINAL SCORE</span>
-                  <span className="text-2xl font-bold text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                  <span className="chunky-text text-[9px] tracking-[4px] text-[#FF6B00]/60 animate-pulse text-center">FINAL SCORE</span>
+                  <span className="chunky-text text-3xl text-white tabular-nums drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] text-center">
                     {score.toString().padStart(6, '0')}
                   </span>
                 </motion.div>
@@ -920,8 +991,8 @@ export default function ModimanGame() {
                 </motion.div>
               </div>
 
-              {/* ── DESKTOP layout: two-column (video left, info right) ── */}
-              <div className="hidden md:flex relative z-10 w-full max-w-4xl items-stretch gap-8">
+              {/* ── DESKTOP layout: video LEFT (9:16), win PNG RIGHT ── */}
+              <div className="hidden md:flex relative z-10 w-full max-w-5xl items-stretch gap-8">
                 {/* LEFT — 9:16 Video */}
                 <motion.div
                   initial={{ x: -40, opacity: 0 }}
@@ -934,8 +1005,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <img src={imageSrc} alt="Result" className="absolute inset-0 w-full h-full object-cover" />
-                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10 grayscale-[0.2]" />
+                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
@@ -946,7 +1016,7 @@ export default function ModimanGame() {
                   </div>
                 </motion.div>
 
-                {/* RIGHT — Info + image + buttons */}
+                {/* RIGHT — Win PNG + Info + Buttons */}
                 <motion.div
                   initial={{ x: 40, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -956,7 +1026,7 @@ export default function ModimanGame() {
                   {/* Result header */}
                   <div className="flex flex-col items-start gap-2">
                     <h1
-                      className="text-3xl lg:text-4xl font-bold tracking-tight"
+                      className="chunky-text text-4xl lg:text-5xl tracking-wider text-left"
                       style={{
                         color: resultColor,
                         textShadow: `0 0 20px ${resultColor}99, 0 0 40px ${resultColor}44`,
@@ -965,7 +1035,7 @@ export default function ModimanGame() {
                     >
                       {won ? 'YOU WIN!' : 'GAME OVER'}
                     </h1>
-                    <p className="text-sm tracking-[4px]" style={{ color: resultColor, opacity: 0.8 }}>
+                    <p className="chunky-text text-sm tracking-[4px] text-left" style={{ color: resultColor, opacity: 0.8 }}>
                       {won
                         ? (character === 'modi' ? 'MODI' : 'RAHUL')
                         : (character === 'modi' ? 'RAHUL' : 'MODI')
@@ -990,8 +1060,8 @@ export default function ModimanGame() {
                       )}
                     </motion.div>
                     <div className="flex flex-col items-start gap-2">
-                      <span className="text-[9px] tracking-[4px] text-[#FF6B00]/60 animate-pulse">FINAL SCORE</span>
-                      <span className="text-4xl lg:text-5xl font-bold text-white tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                      <span className="chunky-text text-[9px] tracking-[4px] text-[#FF6B00]/60 animate-pulse text-left">FINAL SCORE</span>
+                      <span className="chunky-text text-4xl lg:text-5xl text-white tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] text-left">
                         {score.toString().padStart(6, '0')}
                       </span>
                     </div>
@@ -1022,14 +1092,14 @@ export default function ModimanGame() {
                     </button>
                   </div>
 
-                  <p className="text-[8px] text-white/20 tracking-widest">
+                  <p className="text-[8px] text-white/20 tracking-widest" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                     modiman-xi.vercel.app · code.itzpa1
                   </p>
                 </motion.div>
               </div>
 
               {/* Disclaimer */}
-              <p className="absolute bottom-2 text-[7px] text-white/20 italic text-center z-10">
+              <p className="absolute bottom-2 text-[7px] text-white/20 italic text-center z-10" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                 This game is for just fun. Not related to any political party or person.
               </p>
             </motion.div>
@@ -1058,7 +1128,7 @@ export default function ModimanGame() {
               onClick={e => e.stopPropagation()}
             >
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base text-[#FFD700] tracking-wider" style={{ textShadow: '0 0 8px rgba(255,215,0,0.5)' }}>
+                <h2 className="chunky-text text-base text-[#FFD700] tracking-wider" style={{ textShadow: '0 0 8px rgba(255,215,0,0.5)' }}>
                   SHARE SCORE
                 </h2>
                 <button onClick={() => setShareOpen(false)} className="text-gray-500 hover:text-[#FFD700] transition-colors">
@@ -1066,14 +1136,14 @@ export default function ModimanGame() {
                 </button>
               </div>
 
-              <div className="mb-4 text-center text-sm text-white/80">
-                I SCORED <span className="text-[#FFD700] font-bold">{score}</span> POINTS!
+              <div className="mb-4 text-center chunky-text text-sm text-white/80">
+                I SCORED <span className="text-[#FFD700]">{score}</span> POINTS!
               </div>
 
               <div className="grid grid-cols-4 gap-4 mb-4">
                 {[
                   { name: 'WhatsApp', icon: <MessageSquare size={20} />, href: `https://wa.me/?text=${encodeURIComponent(`I scored ${score} in MODIMAN! Play: https://modiman-xi.vercel.app/`)}` },
-                  { name: 'X', icon: <Share2 size={20} />, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`I scored ${score} in MODIMAN! 🏆 Can you beat me? Play: https://modiman-xi.vercel.app/`)}` },
+                  { name: 'X', icon: <Share2 size={20} />, href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`I scored ${score} in MODIMAN! Can you beat me? Play: https://modiman-xi.vercel.app/`)}` },
                   { name: 'Copy', icon: <Copy size={20} />, action: () => { navigator.clipboard.writeText('https://modiman-xi.vercel.app/'); alert('Link copied!'); } },
                 ].map(item => (
                   <button
@@ -1090,7 +1160,7 @@ export default function ModimanGame() {
                     >
                       {item.icon}
                     </a>
-                    <span className="text-[8px] text-gray-500 group-hover:text-[#FFD700]">{item.name}</span>
+                    <span className="text-[8px] text-gray-500 group-hover:text-[#FFD700]" style={{ fontFamily: 'var(--font-geist-mono)' }}>{item.name}</span>
                   </button>
                 ))}
               </div>

@@ -89,15 +89,25 @@
 
 /* ===== MODIMAN GAME STYLES ===== */
 
+/* Chunky game font */
+.chunky-text {
+  font-family: var(--font-bungee), 'Impact', 'Arial Black', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+
 /* Glitch text effect */
 .glitch {
   position: relative;
+  font-family: var(--font-bungee), 'Impact', 'Arial Black', sans-serif;
   color: #FFD700;
-  font-size: clamp(2rem, 8vw, 4.5rem);
-  font-weight: 700;
-  letter-spacing: 6px;
+  font-size: clamp(2.2rem, 9vw, 5rem);
+  font-weight: 400;
+  letter-spacing: 8px;
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 107, 0, 0.2);
   animation: glitch-skew 4s infinite linear alternate-reverse;
+  text-transform: uppercase;
 }
 
 .glitch::before,
@@ -208,8 +218,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-mono);
+  font-family: var(--font-bungee), var(--font-geist-mono), 'Impact', 'Arial Black', sans-serif;
   text-transform: uppercase;
+  letter-spacing: 1px;
   transition: all 0.15s ease;
   outline: none;
   cursor: pointer;
