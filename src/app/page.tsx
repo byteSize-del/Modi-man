@@ -759,7 +759,7 @@ export default function ModimanGame() {
                 Developed by <a href="https://github.com/byteSize-del" target="_blank" rel="noopener noreferrer" className="text-[#FFD700]/70 hover:text-[#FFD700] hover:underline">byteSize-del</a>
               </p>
               <a
-                href=""
+                href="https://github.com/byteSize-del/Modi-man"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[9px] md:text-[10px] text-[#FFD700]/50 hover:text-[#FFD700] transition-colors flex items-center gap-1.5" style={{ fontFamily: 'var(--font-geist-mono)' }}
