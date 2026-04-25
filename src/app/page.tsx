@@ -160,10 +160,7 @@ export default function ModimanGame() {
   const [lives, setLives] = useState(3);
   const [won, setWon] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [disclaimerAgreed, setDisclaimerAgreed] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('modiman_disclaimer_agreed') === 'true';
-    return false;
-  });
+  const [disclaimerAgreed, setDisclaimerAgreed] = useState(false);
 
   // Audio refs
   const charAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -1240,7 +1237,6 @@ export default function ModimanGame() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setDisclaimerAgreed(true);
-                    localStorage.setItem('modiman_disclaimer_agreed', 'true');
                   }}
                   className="chunky-text px-8 py-3 rounded-xl border-2 bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all tracking-wider text-sm md:text-base font-bold"
                   style={{ borderColor: '#FFD700', boxShadow: '0 0 15px rgba(255,215,0,0.3)' }}
