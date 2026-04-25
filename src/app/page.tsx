@@ -1191,7 +1191,7 @@ export default function ModimanGame() {
               </div>
 
               {/* Disclaimer */}
-              <p className="absolute bottom-3 text-sm md:text-base text-white/60 italic text-center z-10 px-4 max-w-2xl left-1/2 transform -translate-x-1/2" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+              <p className="absolute bottom-4 text-base md:text-xl text-white/80 italic text-center z-10 px-6 max-w-3xl left-1/2 transform -translate-x-1/2 leading-relaxed" style={{ fontFamily: 'var(--font-geist-mono)' }}>
                 This game is for just fun. Not related to any political party or person.
               </p>
             </motion.div>
