@@ -23,6 +23,21 @@ const INITIAL_MAZE = [
 
 const GRID = { cols: 13, rows: 13 };
 const CELL = 60;
+const GAME_LOOP_INTERVAL = 280;
+const BG_MUSIC_VOLUME = 0.7;
+const CRASH_AUDIO_VOLUME = 0.7;
+const INITIAL_LIVES = 3;
+const PLAYER_START = { x: 6, y: 10 };
+const GHOSTS_START: Array<{ x: number; y: number; dir: Direction }> = [
+  { x: 5, y: 5, dir: 'LEFT' },
+  { x: 6, y: 5, dir: 'UP' },
+  { x: 7, y: 5, dir: 'RIGHT' },
+];
+
+// Maze cell types
+const MAZE_CELLS = { WALL: 1, DOT: 0, POWER: 3, SPAWN: 4, EMPTY: 2 } as const;
+const DOT_POINTS = 10;
+const POWER_POINTS = 50;
 
 type Screen = 'menu' | 'playing' | 'gameover';
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -104,6 +119,21 @@ class SoundEngine {
 }
 
 const sound = new SoundEngine();
+
+// ============== AUDIO HELPERS ==============
+const stopAudio = (audioRef: React.MutableRefObject<HTMLAudioElement | null>) => {
+  if (!audioRef.current) return;
+  audioRef.current.pause();
+  audioRef.current.currentTime = 0;
+  audioRef.current = null;
+};
+
+const playAudio = (src: string, volume: number = 1): HTMLAudioElement => {
+  const audio = new Audio(src);
+  audio.volume = volume;
+  audio.play().catch(() => {});
+  return audio;
+};
 
 // ============== CHARACTER DATA ==============
 const CHARACTERS: { id: Character; name: string; img: string; color: string; glowColor: string }[] = [
@@ -190,14 +220,12 @@ export default function ModimanGame() {
   // ============== BACKGROUND MUSIC ==============
   useEffect(() => {
     if (screen === 'playing') {
-      // Create bg music if not already created
       if (!bgMusicRef.current) {
         const audio = new Audio('/audio/bg_music.mp3');
         audio.loop = true;
-        audio.volume = 0.7;
+        audio.volume = BG_MUSIC_VOLUME;
         bgMusicRef.current = audio;
       }
-      // Play or pause based on mute
       if (!isMuted) {
         bgMusicRef.current.play().catch(() => {});
       } else {
@@ -205,27 +233,19 @@ export default function ModimanGame() {
       }
     }
 
-    // Stop bg music when leaving game screen
     if (screen !== 'playing' && bgMusicRef.current) {
-      bgMusicRef.current.pause();
-      bgMusicRef.current.currentTime = 0;
-      bgMusicRef.current = null;
+      stopAudio(bgMusicRef);
     }
-
-    // Stop crash audio when leaving game screen
     if (screen !== 'playing' && crashAudioRef.current) {
-      crashAudioRef.current.pause();
-      crashAudioRef.current.currentTime = 0;
-      crashAudioRef.current = null;
+      stopAudio(crashAudioRef);
     }
   }, [screen]);
 
-  // Toggle bg music on mute/unmute
   useEffect(() => {
-    if (screen !== 'playing') return;
-    if (isMuted && bgMusicRef.current) {
+    if (screen !== 'playing' || !bgMusicRef.current) return;
+    if (isMuted) {
       bgMusicRef.current.pause();
-    } else if (!isMuted && bgMusicRef.current) {
+    } else {
       bgMusicRef.current.play().catch(() => {});
     }
   }, [isMuted, screen]);
@@ -233,35 +253,15 @@ export default function ModimanGame() {
   // ============== GAME OVER AUDIO ==============
   useEffect(() => {
     if (screen === 'gameover') {
-      // Stop bg music first
-      if (bgMusicRef.current) {
-        bgMusicRef.current.pause();
-        bgMusicRef.current.currentTime = 0;
-        bgMusicRef.current = null;
-      }
-
-      // Stop crash audio if still playing
-      if (crashAudioRef.current) {
-        crashAudioRef.current.pause();
-        crashAudioRef.current.currentTime = 0;
-        crashAudioRef.current = null;
-      }
-
-      // Cleanup game over audio ref
-      if (gameOverAudioRef.current) {
-        gameOverAudioRef.current.pause();
-        gameOverAudioRef.current = null;
-      }
-      // No audio file playback on game over screen
+      stopAudio(bgMusicRef);
+      stopAudio(crashAudioRef);
+      stopAudio(gameOverAudioRef);
     }
 
-    // Cleanup game over audio when leaving
-    if (screen !== 'gameover' && gameOverAudioRef.current) {
-      gameOverAudioRef.current.pause();
-      gameOverAudioRef.current.currentTime = 0;
-      gameOverAudioRef.current = null;
+    if (screen !== 'gameover') {
+      stopAudio(gameOverAudioRef);
     }
-  }, [screen, isMuted]);
+  }, [screen]);
 
   // ============== GAMEOVER VIDEO PLAYBACK ==============
   useEffect(() => {
@@ -296,22 +296,19 @@ export default function ModimanGame() {
     if (nx < 0) nx = GRID.cols - 1;
     if (nx >= GRID.cols) nx = 0;
     const maze = mazeRef.current;
-    if (maze[ny] && maze[ny][nx] !== 1 && maze[ny][nx] !== 4) return { x: nx, y: ny };
+    const cell = maze[ny]?.[nx];
+    if (cell !== MAZE_CELLS.WALL && cell !== MAZE_CELLS.SPAWN) return { x: nx, y: ny };
     return { x, y };
   }, []);
 
   const resetGame = useCallback(() => {
     mazeRef.current = INITIAL_MAZE.map(r => [...r]);
-    playerRef.current = { x: 6, y: 10, nextDir: null, currentDir: null };
-    ghostsRef.current = [
-      { x: 5, y: 5, dir: 'LEFT' },
-      { x: 6, y: 5, dir: 'UP' },
-      { x: 7, y: 5, dir: 'RIGHT' },
-    ];
+    playerRef.current = { ...PLAYER_START, nextDir: null, currentDir: null };
+    ghostsRef.current = GHOSTS_START.map(g => ({ ...g }));
     scoreRef.current = 0;
-    livesRef.current = 3;
+    livesRef.current = INITIAL_LIVES;
     setScore(0);
-    setLives(3);
+    setLives(INITIAL_LIVES);
   }, []);
 
   const startGame = useCallback(() => {
@@ -349,14 +346,14 @@ export default function ModimanGame() {
 
       // Check dot / power pellet
       const cell = mazeRef.current[p.y]?.[p.x];
-      if (cell === 0) {
-        mazeRef.current[p.y][p.x] = 2;
-        scoreRef.current += 10;
+      if (cell === MAZE_CELLS.DOT) {
+        mazeRef.current[p.y][p.x] = MAZE_CELLS.EMPTY;
+        scoreRef.current += DOT_POINTS;
         sound.play('dot');
         setScore(scoreRef.current);
-      } else if (cell === 3) {
-        mazeRef.current[p.y][p.x] = 2;
-        scoreRef.current += 50;
+      } else if (cell === MAZE_CELLS.POWER) {
+        mazeRef.current[p.y][p.x] = MAZE_CELLS.EMPTY;
+        scoreRef.current += POWER_POINTS;
         sound.play('power');
         setScore(scoreRef.current);
       }
@@ -387,40 +384,25 @@ export default function ModimanGame() {
       // Collision
       const hit = gList.find(g => g.x === p.x && g.y === p.y);
       if (hit) {
-        // Don't play sounds if this is the last life (gameover screen video will provide audio)
         const isLastLife = livesRef.current === 1;
         
         if (!isLastLife && !isMutedRef.current) {
-          // Play character-specific crash audio only if not on last life
-          if (crashAudioRef.current) {
-            crashAudioRef.current.pause();
-            crashAudioRef.current.currentTime = 0;
-          }
+          stopAudio(crashAudioRef);
           const crashSrc = character === 'modi' ? '/audio/khatam.mp3' : '/audio/laure-na-bhujjam-x-modi.mp3';
-          const crashAudio = new Audio(crashSrc);
-          crashAudio.volume = 0.7;
-          crashAudioRef.current = crashAudio;
-          crashAudio.play().catch(() => {});
+          crashAudioRef.current = playAudio(crashSrc, CRASH_AUDIO_VOLUME);
           sound.play('death');
         } else if (isLastLife) {
-          // Stop all audio immediately for clean gameover screen
-          if (crashAudioRef.current) {
-            crashAudioRef.current.pause();
-            crashAudioRef.current.currentTime = 0;
-          }
-          if (bgMusicRef.current) {
-            bgMusicRef.current.pause();
-            bgMusicRef.current.currentTime = 0;
-          }
+          stopAudio(crashAudioRef);
+          stopAudio(bgMusicRef);
         }
         
         if (livesRef.current > 1) {
           livesRef.current--;
           setLives(livesRef.current);
-          p.x = 6; p.y = 10; p.currentDir = null; p.nextDir = null;
-          gList[0] = { x: 5, y: 5, dir: 'LEFT' };
-          gList[1] = { x: 6, y: 5, dir: 'UP' };
-          gList[2] = { x: 7, y: 5, dir: 'RIGHT' };
+          p.x = PLAYER_START.x; p.y = PLAYER_START.y; p.currentDir = null; p.nextDir = null;
+          gList[0] = { ...GHOSTS_START[0] };
+          gList[1] = { ...GHOSTS_START[1] };
+          gList[2] = { ...GHOSTS_START[2] };
         } else {
           setLives(0);
           setWon(false);
@@ -430,13 +412,12 @@ export default function ModimanGame() {
       }
 
       // Win check
-      if (!mazeRef.current.some(row => row.includes(0) || row.includes(3))) {
-        // Video audio provides victory feedback, no synth needed
+      if (!mazeRef.current.some(row => row.includes(MAZE_CELLS.DOT) || row.includes(MAZE_CELLS.POWER))) {
         setWon(true);
         setScreen('gameover');
         clearInterval(loop);
       }
-    }, 280);
+    }, GAME_LOOP_INTERVAL);
 
     loopRef.current = loop;
     return () => { clearInterval(loop); loopRef.current = null; };
@@ -477,7 +458,7 @@ export default function ModimanGame() {
           const cx = x * CELL;
           const cy = y * CELL;
 
-          if (cell === 1) {
+          if (cell === MAZE_CELLS.WALL) {
             ctx.fillStyle = '#0d1b2a';
             ctx.fillRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
             ctx.strokeStyle = '#1b3a5c';
@@ -486,7 +467,7 @@ export default function ModimanGame() {
 
             const hasPathNeighbor = (nx: number, ny: number) => {
               if (nx < 0 || nx >= GRID.cols || ny < 0 || ny >= GRID.rows) return false;
-              return maze[ny][nx] !== 1;
+              return maze[ny][nx] !== MAZE_CELLS.WALL;
             };
             if (hasPathNeighbor(x, y - 1)) { ctx.fillStyle = 'rgba(0,229,255,0.15)'; ctx.fillRect(cx + 4, cy + 4, CELL - 8, 2); }
             if (hasPathNeighbor(x, y + 1)) { ctx.fillStyle = 'rgba(0,229,255,0.15)'; ctx.fillRect(cx + 4, cy + CELL - 6, CELL - 8, 2); }
@@ -494,7 +475,7 @@ export default function ModimanGame() {
             if (hasPathNeighbor(x + 1, y)) { ctx.fillStyle = 'rgba(0,229,255,0.15)'; ctx.fillRect(cx + CELL - 6, cy + 4, 2, CELL - 8); }
           }
 
-          if (cell === 4) {
+          if (cell === MAZE_CELLS.SPAWN) {
             ctx.fillStyle = '#1a0a0a';
             ctx.fillRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
             ctx.strokeStyle = 'rgba(255,0,68,0.3)';
@@ -502,7 +483,7 @@ export default function ModimanGame() {
             ctx.strokeRect(cx + 4, cy + 4, CELL - 8, CELL - 8);
           }
 
-          if (cell === 0) {
+          if (cell === MAZE_CELLS.DOT) {
             ctx.beginPath();
             ctx.arc(cx + CELL / 2, cy + CELL / 2, 4, 0, Math.PI * 2);
             ctx.fillStyle = '#FFD700';
@@ -513,7 +494,7 @@ export default function ModimanGame() {
             ctx.shadowBlur = 0;
           }
 
-          if (cell === 3) {
+          if (cell === MAZE_CELLS.POWER) {
             const pulse = 0.6 + 0.4 * Math.sin(frame * 0.08);
             ctx.beginPath();
             ctx.arc(cx + CELL / 2, cy + CELL / 2, 14 * pulse + 6, 0, Math.PI * 2);
