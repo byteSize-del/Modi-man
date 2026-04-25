@@ -1,0 +1,256 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #0a0a0a;
+  --foreground: #e5e5e5;
+  --card: #111111;
+  --card-foreground: #e5e5e5;
+  --popover: #111111;
+  --popover-foreground: #e5e5e5;
+  --primary: #FF6B00;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1a1a2e;
+  --secondary-foreground: #e5e5e5;
+  --muted: #1a1a1a;
+  --muted-foreground: #737373;
+  --accent: #00E5FF;
+  --accent-foreground: #0a0a0a;
+  --destructive: #FF0044;
+  --border: rgba(255,255,255,0.08);
+  --input: rgba(255,255,255,0.08);
+  --ring: #FF6B00;
+  --chart-1: #FF6B00;
+  --chart-2: #00E5FF;
+  --chart-3: #FFD700;
+  --chart-4: #FF0044;
+  --chart-5: #00FF88;
+  --sidebar: #111111;
+  --sidebar-foreground: #e5e5e5;
+  --sidebar-primary: #FF6B00;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #1a1a2e;
+  --sidebar-accent-foreground: #e5e5e5;
+  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-ring: #FF6B00;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== MODIMAN GAME STYLES ===== */
+
+/* Glitch text effect */
+.glitch {
+  position: relative;
+  color: #FFD700;
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: 6px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4), 0 0 60px rgba(255, 107, 0, 0.2);
+  animation: glitch-skew 4s infinite linear alternate-reverse;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 #00E5FF;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  animation: glitch-anim 3s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 #FF0044;
+  clip-path: polygon(0 80%, 100% 20%, 100% 100%, 0 100%);
+  animation: glitch-anim2 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip-path: polygon(0 2%, 100% 2%, 100% 5%, 0 5%); }
+  20% { clip-path: polygon(0 15%, 100% 15%, 100% 15%, 0 15%); }
+  40% { clip-path: polygon(0 10%, 100% 10%, 100% 20%, 0 20%); }
+  60% { clip-path: polygon(0 1%, 100% 1%, 100% 2%, 0 2%); }
+  80% { clip-path: polygon(0 33%, 100% 33%, 100% 33%, 0 33%); }
+  100% { clip-path: polygon(0 44%, 100% 44%, 100% 44%, 0 44%); }
+}
+
+@keyframes glitch-anim2 {
+  0% { clip-path: polygon(0 25%, 100% 25%, 100% 30%, 0 30%); }
+  20% { clip-path: polygon(0 3%, 100% 3%, 100% 3%, 0 3%); }
+  40% { clip-path: polygon(0 5%, 100% 5%, 100% 20%, 0 20%); }
+  60% { clip-path: polygon(0 20%, 100% 20%, 100% 20%, 0 20%); }
+  80% { clip-path: polygon(0 10%, 100% 10%, 100% 10%, 0 10%); }
+  100% { clip-path: polygon(0 40%, 100% 40%, 100% 40%, 0 40%); }
+}
+
+@keyframes glitch-skew {
+  0% { transform: skew(0deg); }
+  10% { transform: skew(0deg); }
+  11% { transform: skew(-1deg); }
+  12% { transform: skew(0deg); }
+  50% { transform: skew(0deg); }
+  51% { transform: skew(1deg); }
+  52% { transform: skew(0deg); }
+  100% { transform: skew(0deg); }
+}
+
+/* Power pellet glow */
+@keyframes pellet-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 229, 255, 0.4), 0 0 16px rgba(0, 229, 255, 0.2); background: rgba(0, 229, 255, 0.15); }
+  50% { box-shadow: 0 0 16px rgba(0, 229, 255, 0.8), 0 0 32px rgba(0, 229, 255, 0.4); background: rgba(0, 229, 255, 0.3); }
+}
+
+/* Neon pulse for buttons */
+@keyframes neon-pulse {
+  0%, 100% { box-shadow: 0 0 10px var(--neon-color, #FF6B00), inset 0 0 10px var(--neon-color, #FF6B00); }
+  50% { box-shadow: 0 0 20px var(--neon-color, #FF6B00), inset 0 0 20px var(--neon-color, #FF6B00), 0 0 40px var(--neon-color, #FF6B00); }
+}
+
+/* Grid background animation */
+@keyframes grid-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Scan line effect */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Game over glitch */
+@keyframes gameover-glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-3px, 3px); }
+  40% { transform: translate(-3px, -3px); }
+  60% { transform: translate(3px, 3px); }
+  80% { transform: translate(3px, -3px); }
+  100% { transform: translate(0); }
+}
+
+/* Retro grid background */
+.retro-grid {
+  background-image:
+    linear-gradient(rgba(255, 107, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 107, 0, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: grid-scroll 4s linear infinite;
+}
+
+/* Neon button base */
+.neon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-geist-mono);
+  text-transform: uppercase;
+  transition: all 0.15s ease;
+  outline: none;
+  cursor: pointer;
+}
+
+.neon-btn:active {
+  transform: scale(0.95);
+}
+
+.neon-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Scanline overlay */
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  animation: scanline 6s linear infinite;
+  pointer-events: none;
+  z-index: 60;
+}
+
+/* Canvas glow border */
+.canvas-glow {
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3), 0 0 40px rgba(0, 229, 255, 0.1);
+  border: 2px solid rgba(0, 229, 255, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
