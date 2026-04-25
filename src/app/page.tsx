@@ -193,7 +193,7 @@ export default function ModimanGame() {
       if (!bgMusicRef.current) {
         const audio = new Audio('/audio/bg_music.mp3');
         audio.loop = true;
-        audio.volume = 0.4;
+        audio.volume = 0.7;
         bgMusicRef.current = audio;
       }
       // Play or pause based on mute
@@ -246,20 +246,12 @@ export default function ModimanGame() {
         crashAudioRef.current = null;
       }
 
-      // Play game over audio
+      // Cleanup game over audio ref
       if (gameOverAudioRef.current) {
         gameOverAudioRef.current.pause();
         gameOverAudioRef.current = null;
       }
-
-      if (!isMuted) {
-        const audioSrc = won ? '/audio/laure-na-bhujjam-x-modi.mp3' : '/audio/khatam.mp3';
-        const audio = new Audio(audioSrc);
-        audio.loop = true;
-        audio.volume = 0.6;
-        gameOverAudioRef.current = audio;
-        audio.play().catch(() => {});
-      }
+      // No audio file playback on game over screen
     }
 
     // Cleanup game over audio when leaving
@@ -268,25 +260,7 @@ export default function ModimanGame() {
       gameOverAudioRef.current.currentTime = 0;
       gameOverAudioRef.current = null;
     }
-  }, [screen, won, isMuted]);
-
-  // Toggle game over audio on mute/unmute
-  useEffect(() => {
-    if (screen !== 'gameover') return;
-    if (isMuted && gameOverAudioRef.current) {
-      gameOverAudioRef.current.pause();
-    } else if (!isMuted && screen === 'gameover') {
-      // Recreate if needed
-      if (!gameOverAudioRef.current) {
-        const audioSrc = won ? '/audio/laure-na-bhujjam-x-modi.mp3' : '/audio/khatam.mp3';
-        const audio = new Audio(audioSrc);
-        audio.loop = true;
-        audio.volume = 0.6;
-        gameOverAudioRef.current = audio;
-      }
-      gameOverAudioRef.current.play().catch(() => {});
-    }
-  }, [isMuted, screen, won]);
+  }, [screen, isMuted]);
 
   // ============== GAME LOGIC ==============
   const moveEntity = useCallback((x: number, y: number, dir: Direction | null) => {
@@ -632,9 +606,9 @@ export default function ModimanGame() {
 
   // ============== SHARE ==============
   const handleShare = useCallback(async () => {
-    const shareText = `I scored ${score} in MODIMAN! Can you beat me? Play here: https://modiman-xi.vercel.app/`;
+    const shareText = `I scored ${score} in MODIMAN! Can you beat me? Play here: `;
     if (navigator.share) {
-      try { await navigator.share({ title: 'MODIMAN', text: shareText, url: 'https://modiman-xi.vercel.app/' }); } catch { setShareOpen(true); }
+      try { await navigator.share({ title: 'MODIMAN', text: shareText, url: '' }); } catch { setShareOpen(true); }
     } else { setShareOpen(true); }
   }, [score]);
 
@@ -782,10 +756,10 @@ export default function ModimanGame() {
             {/* Footer */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1 w-full p-2">
               <p className="text-[9px] md:text-[10px] text-white/50 text-center" style={{ fontFamily: 'var(--font-geist-mono)' }}>
-                Developed by <a href="https://github.com/itzpa1" target="_blank" rel="noopener noreferrer" className="text-[#FFD700]/70 hover:text-[#FFD700] hover:underline">code.itzpa1</a>
+                Developed by <a href="https://github.com/byteSize-del" target="_blank" rel="noopener noreferrer" className="text-[#FFD700]/70 hover:text-[#FFD700] hover:underline">byteSize-del</a>
               </p>
               <a
-                href="https://github.com/itzpa1/modiman"
+                href=""
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[9px] md:text-[10px] text-[#FFD700]/50 hover:text-[#FFD700] transition-colors flex items-center gap-1.5" style={{ fontFamily: 'var(--font-geist-mono)' }}
@@ -978,7 +952,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+                      <video src={videoSrc} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   </div>
                   {/* Win PNG on RIGHT */}
@@ -1055,7 +1029,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline muted className="absolute inset-0 w-full h-full object-cover z-10" />
+                      <video src={videoSrc} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
