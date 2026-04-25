@@ -297,7 +297,7 @@ This project is open source and available under the **MIT License** - see [LICEN
 
 ## 🔗 Links
 
-- **Live Demo:** [pacman-xi.vercel.app](https://pacman-xi.vercel.app/)
+- **Live Demo:** [pacman-xi.vercel.app](https://modi-man.vercel.app/)
 - **GitHub:** [byteSize-del/Modi-man](https://github.com/byteSize-del/Modi-man)
 - **Report Issues:** [GitHub Issues](https://github.com/byteSize-del/Modi-man/issues)
 
