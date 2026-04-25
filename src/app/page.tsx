@@ -135,6 +135,7 @@ export default function ModimanGame() {
   const charAudioRef = useRef<HTMLAudioElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const gameOverAudioRef = useRef<HTMLAudioElement | null>(null);
+  const crashAudioRef = useRef<HTMLAudioElement | null>(null);
   const isMutedRef = useRef(isMuted);
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
 
@@ -187,17 +188,20 @@ export default function ModimanGame() {
 
   // ============== BACKGROUND MUSIC ==============
   useEffect(() => {
-    if (screen === 'playing' && !isMuted) {
-      // Start bg music
-      if (bgMusicRef.current) {
-        bgMusicRef.current.pause();
-        bgMusicRef.current = null;
+    if (screen === 'playing') {
+      // Create bg music if not already created
+      if (!bgMusicRef.current) {
+        const audio = new Audio('/audio/bg_music.mp3');
+        audio.loop = true;
+        audio.volume = 0.4;
+        bgMusicRef.current = audio;
       }
-      const audio = new Audio('/audio/bg_music.mp3');
-      audio.loop = true;
-      audio.volume = 0.4;
-      bgMusicRef.current = audio;
-      audio.play().catch(() => {});
+      // Play or pause based on mute
+      if (!isMuted) {
+        bgMusicRef.current.play().catch(() => {});
+      } else {
+        bgMusicRef.current.pause();
+      }
     }
 
     // Stop bg music when leaving game screen
@@ -206,13 +210,21 @@ export default function ModimanGame() {
       bgMusicRef.current.currentTime = 0;
       bgMusicRef.current = null;
     }
-  }, [screen, isMuted]);
 
-  // Stop bg music on mute
+    // Stop crash audio when leaving game screen
+    if (screen !== 'playing' && crashAudioRef.current) {
+      crashAudioRef.current.pause();
+      crashAudioRef.current.currentTime = 0;
+      crashAudioRef.current = null;
+    }
+  }, [screen]);
+
+  // Toggle bg music on mute/unmute
   useEffect(() => {
+    if (screen !== 'playing') return;
     if (isMuted && bgMusicRef.current) {
       bgMusicRef.current.pause();
-    } else if (!isMuted && screen === 'playing' && bgMusicRef.current) {
+    } else if (!isMuted && bgMusicRef.current) {
       bgMusicRef.current.play().catch(() => {});
     }
   }, [isMuted, screen]);
@@ -225,6 +237,13 @@ export default function ModimanGame() {
         bgMusicRef.current.pause();
         bgMusicRef.current.currentTime = 0;
         bgMusicRef.current = null;
+      }
+
+      // Stop crash audio if still playing
+      if (crashAudioRef.current) {
+        crashAudioRef.current.pause();
+        crashAudioRef.current.currentTime = 0;
+        crashAudioRef.current = null;
       }
 
       // Play game over audio
@@ -250,6 +269,24 @@ export default function ModimanGame() {
       gameOverAudioRef.current = null;
     }
   }, [screen, won, isMuted]);
+
+  // Toggle game over audio on mute/unmute
+  useEffect(() => {
+    if (screen !== 'gameover') return;
+    if (isMuted && gameOverAudioRef.current) {
+      gameOverAudioRef.current.pause();
+    } else if (!isMuted && screen === 'gameover') {
+      // Recreate if needed
+      if (!gameOverAudioRef.current) {
+        const audioSrc = won ? '/audio/laure-na-bhujjam-x-modi.mp3' : '/audio/khatam.mp3';
+        const audio = new Audio(audioSrc);
+        audio.loop = true;
+        audio.volume = 0.6;
+        gameOverAudioRef.current = audio;
+      }
+      gameOverAudioRef.current.play().catch(() => {});
+    }
+  }, [isMuted, screen, won]);
 
   // ============== GAME LOGIC ==============
   const moveEntity = useCallback((x: number, y: number, dir: Direction | null) => {
@@ -353,6 +390,19 @@ export default function ModimanGame() {
       // Collision
       const hit = gList.find(g => g.x === p.x && g.y === p.y);
       if (hit) {
+        // Play character-specific crash audio
+        if (!isMutedRef.current) {
+          // Stop previous crash audio if still playing
+          if (crashAudioRef.current) {
+            crashAudioRef.current.pause();
+            crashAudioRef.current.currentTime = 0;
+          }
+          const crashSrc = character === 'modi' ? '/audio/khatam.mp3' : '/audio/laure-na-bhujjam-x-modi.mp3';
+          const crashAudio = new Audio(crashSrc);
+          crashAudio.volume = 0.7;
+          crashAudioRef.current = crashAudio;
+          crashAudio.play().catch(() => {});
+        }
         sound.play('death');
         if (livesRef.current > 1) {
           livesRef.current--;
@@ -928,7 +978,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover" />
+                      <video src={videoSrc} autoPlay loop playsInline muted className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   </div>
                   {/* Win PNG on RIGHT */}
@@ -1005,7 +1055,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline muted={isMuted} className="absolute inset-0 w-full h-full object-cover z-10" />
+                      <video src={videoSrc} autoPlay loop playsInline muted className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
