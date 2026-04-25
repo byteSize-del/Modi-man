@@ -160,6 +160,10 @@ export default function ModimanGame() {
   const [lives, setLives] = useState(3);
   const [won, setWon] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [disclaimerAgreed, setDisclaimerAgreed] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('modiman_disclaimer_agreed') === 'true';
+    return false;
+  });
 
   // Audio refs
   const charAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -1197,6 +1201,56 @@ export default function ModimanGame() {
             </motion.div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* ============== DISCLAIMER POPUP ============== */}
+      <AnimatePresence>
+        {!disclaimerAgreed && (
+          <motion.div
+            key="disclaimer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0.3 }}
+              className="w-full max-w-2xl rounded-2xl border-2 border-[#FFD700]/50 bg-[#0d0d0d] p-8"
+              style={{ boxShadow: '0 0 30px rgba(255,215,0,0.2), inset 0 0 30px rgba(255,215,0,0.1)' }}
+            >
+              <h2 className="chunky-text text-2xl md:text-3xl text-[#FFD700] tracking-wider text-center mb-4" style={{ textShadow: '0 0 15px rgba(255,215,0,0.5)' }}>
+                ⚠️ DISCLAIMER
+              </h2>
+
+              <div className="bg-black/60 rounded-xl p-6 mb-6 border border-white/10">
+                <p className="chunky-text text-base md:text-lg text-white/90 leading-relaxed text-center mb-4" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+                  This game is for just fun and entertainment purposes only.
+                </p>
+                <p className="chunky-text text-base md:text-lg text-white/90 leading-relaxed text-center" style={{ fontFamily: 'var(--font-geist-mono)' }}>
+                  Not related to any political party, politician, or person.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setDisclaimerAgreed(true);
+                    localStorage.setItem('modiman_disclaimer_agreed', 'true');
+                  }}
+                  className="chunky-text px-8 py-3 rounded-xl border-2 bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all tracking-wider text-sm md:text-base font-bold"
+                  style={{ borderColor: '#FFD700', boxShadow: '0 0 15px rgba(255,215,0,0.3)' }}
+                >
+                  I UNDERSTAND
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* ============== SHARE SHEET ============== */}
