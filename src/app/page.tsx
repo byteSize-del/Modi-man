@@ -952,7 +952,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 20px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover" />
+                      <video src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover" />
                     </div>
                   </div>
                   {/* Win PNG on RIGHT */}
@@ -1029,7 +1029,7 @@ export default function ModimanGame() {
                     style={{ borderColor: charColor, boxShadow: `0 0 25px ${charGlow}` }}
                   >
                     <div className="relative w-full" style={{ aspectRatio: '9/16' }}>
-                      <video src={videoSrc} autoPlay loop playsInline className="absolute inset-0 w-full h-full object-cover z-10" />
+                      <video src={videoSrc} autoPlay playsInline preload="auto" className="absolute inset-0 w-full h-full object-cover z-10" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none z-20" />
                       {won && (
                         <div className="absolute bottom-3 right-3 z-30">
