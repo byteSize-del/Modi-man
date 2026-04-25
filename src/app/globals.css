@@ -265,3 +265,256 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ===== ENHANCED VISUAL EFFECTS ===== */
+
+/* Smooth page transitions */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom cursor effect */
+* {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="5" cy="5" r="3" fill="%23FF6B00"/></svg>') 5 5, auto;
+}
+
+button, a {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="5" cy="5" r="4" fill="%23FFD700"/><circle cx="5" cy="5" r="2" fill="%23FF6B00"/></svg>') 5 5, pointer;
+}
+
+/* Dynamic glow background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: background-shift 15s ease-in-out infinite;
+}
+
+@keyframes background-shift {
+  0%, 100% {
+    background: radial-gradient(circle at 20% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 50%);
+  }
+  50% {
+    background: radial-gradient(circle at 80% 50%, rgba(255, 107, 0, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 50%);
+  }
+}
+
+/* Enhanced neon button effects */
+.neon-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 0 20px rgba(255, 107, 0, 0.3), inset 0 0 20px rgba(255, 107, 0, 0.1);
+}
+
+.neon-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+  z-index: 0;
+}
+
+.neon-btn:hover::before {
+  left: 100%;
+}
+
+.neon-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.neon-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.4), inset 0 0 20px rgba(255, 107, 0, 0.2);
+  letter-spacing: 3px;
+}
+
+.neon-btn:active {
+  transform: scale(0.95) translateY(0);
+}
+
+/* Glowing text enhancement */
+.glitch {
+  animation: glitch-skew 4s infinite linear alternate-reverse, text-glow 3s ease-in-out infinite;
+}
+
+@keyframes text-glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8),
+                 0 0 20px rgba(255, 215, 0, 0.5),
+                 0 0 40px rgba(255, 107, 0, 0.3),
+                 0 0 60px rgba(255, 107, 0, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 1),
+                 0 0 30px rgba(255, 215, 0, 0.7),
+                 0 0 50px rgba(255, 107, 0, 0.5),
+                 0 0 80px rgba(255, 107, 0, 0.2);
+  }
+}
+
+/* Character card animation */
+@keyframes card-float {
+  0%, 100% {
+    transform: translateY(0) rotateZ(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotateZ(-1deg);
+  }
+  75% {
+    transform: translateY(-8px) rotateZ(1deg);
+  }
+}
+
+/* Enhanced modal effects */
+@keyframes modal-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Enhanced score display */
+.score-display {
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.score-display.highlight {
+  color: #FFD700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 107, 0, 0.4);
+  animation: score-pop 0.6s ease-out;
+}
+
+@keyframes score-pop {
+  0% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Particles effect */
+@keyframes particle-float {
+  0% {
+    opacity: 0;
+    transform: translateY(0) translateX(0);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) translateX(var(--tx, 0));
+  }
+}
+
+/* Enhanced scanlines */
+.scanline-overlay::after {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 10%,
+    transparent 20%,
+    transparent 80%,
+    rgba(0, 0, 0, 0.1) 90%,
+    transparent 100%
+  );
+  animation: scanline 8s linear infinite;
+}
+
+/* Improved canvas border glow */
+.canvas-glow {
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3),
+              0 0 40px rgba(0, 229, 255, 0.1),
+              inset 0 0 20px rgba(0, 229, 255, 0.05);
+  border: 2px solid rgba(0, 229, 255, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: border-pulse 3s ease-in-out infinite;
+}
+
+@keyframes border-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.3),
+                0 0 40px rgba(0, 229, 255, 0.1),
+                inset 0 0 20px rgba(0, 229, 255, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(0, 229, 255, 0.5),
+                0 0 60px rgba(0, 229, 255, 0.2),
+                inset 0 0 30px rgba(0, 229, 255, 0.1);
+  }
+}
+
+/* Ghost/Enemy visual enhancement */
+@keyframes ghost-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px currentColor) drop-shadow(0 0 24px currentColor);
+  }
+}
+
+/* Enhanced character glow */
+@keyframes char-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 0 20px rgba(255, 107, 0, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px currentColor) drop-shadow(0 0 40px rgba(255, 107, 0, 0.6));
+  }
+}
+
+/* Victory/defeat screen effects */
+@keyframes victory-burst {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Responsive hover effects */
+@media (hover: hover) {
+  .neon-btn {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .neon-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+  }
+}

@@ -661,18 +661,28 @@ export default function ModimanGame() {
 
             {/* Top bar */}
             <div className="absolute top-4 right-4 z-20 flex gap-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={() => setIsMuted(!isMuted)}
-                className="neon-btn p-3 bg-black/80 border-2 border-[#1a1a2e] rounded-lg text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700] hover:shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all"
+                className="neon-btn p-3 bg-black/80 border-2 border-[#1a1a2e] rounded-lg text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700] hover:shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all group"
               >
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-              </button>
-              <button
+                <div className="relative">
+                  {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 onClick={handleShare}
-                className="neon-btn p-3 bg-black/80 border-2 border-[#1a1a2e] rounded-lg text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700] hover:shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all"
+                className="neon-btn p-3 bg-black/80 border-2 border-[#1a1a2e] rounded-lg text-gray-400 hover:text-[#FFD700] hover:border-[#FFD700] hover:shadow-[0_0_15px_rgba(255,215,0,0.3)] transition-all group"
               >
-                <Share2 size={20} />
-              </button>
+                <div className="relative">
+                  <Share2 size={20} />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </motion.button>
             </div>
 
             {/* Main content */}
@@ -688,6 +698,9 @@ export default function ModimanGame() {
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                   className="relative w-36 h-36 md:w-44 md:h-44 rounded-2xl overflow-hidden border-2 border-[#FFD700]/30 shadow-[0_0_30px_rgba(255,215,0,0.2)]"
+                  style={{
+                    boxShadow: '0 0 40px rgba(255,215,0,0.3), inset 0 0 40px rgba(255,107,0,0.1), 0 0 80px rgba(255,107,0,0.1)',
+                  }}
                 >
                   <img src="/favicon.png" alt="MODIMAN" className="w-full h-full object-contain" />
                 </motion.div>
@@ -724,23 +737,26 @@ export default function ModimanGame() {
                         audio.play().catch(() => {});
                       }
                     }}
-                    className={`neon-btn relative flex-1 py-4 px-4 rounded-xl border-2 transition-all duration-200 gap-3 ${
+                    className={`neon-btn relative flex-1 py-4 px-4 rounded-xl border-2 transition-all duration-300 gap-3 group overflow-hidden ${
                       character === ch.id
                         ? 'bg-black/80 scale-[1.03]'
-                        : 'bg-black/50 border-[#1a1a2e] opacity-60 hover:opacity-80'
+                        : 'bg-black/50 border-[#1a1a2e] opacity-60 hover:opacity-100 hover:scale-[1.02]'
                     }`}
                     style={character === ch.id ? {
                       borderColor: ch.color,
-                      boxShadow: `0 0 15px ${ch.glowColor}, inset 0 0 15px ${ch.glowColor}`,
+                      boxShadow: `0 0 20px ${ch.glowColor}, inset 0 0 15px ${ch.glowColor}, 0 8px 25px rgba(255,107,0,0.2)`,
                     } : {}}
                   >
-                    {character === ch.id && <ChevronRight size={18} style={{ color: ch.color }} />}
-                    <span className="chunky-text text-xs md:text-sm tracking-wider" style={character === ch.id ? { color: ch.color } : { color: '#999' }}>
+                    {/* Animated shine effect */}
+                    <div className="absolute -inset-full top-0 h-full w-full bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 -skew-x-12 group-hover:translate-x-full transition-all duration-700" />
+                    
+                    {character === ch.id && <ChevronRight size={18} style={{ color: ch.color }} className="animate-pulse" />}
+                    <span className="chunky-text text-xs md:text-sm tracking-wider relative z-10" style={character === ch.id ? { color: ch.color } : { color: '#999' }}>
                       {ch.name}
                     </span>
                     <div
-                      className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2"
-                      style={{ borderColor: ch.color, boxShadow: `0 0 8px ${ch.glowColor}` }}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full overflow-hidden border-2 transition-transform duration-300 group-hover:scale-110"
+                      style={{ borderColor: ch.color, boxShadow: `0 0 12px ${ch.glowColor}` }}
                     >
                       <img src={ch.img} alt={ch.name} className="w-full h-full object-contain" />
                     </div>
@@ -753,20 +769,23 @@ export default function ModimanGame() {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.05, y: -4 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={startGame}
-                className="neon-btn px-8 py-4 md:py-5 rounded-xl border-2 bg-black text-[#FFD700] text-sm md:text-lg tracking-widest gap-3"
+                className="neon-btn px-8 py-4 md:py-5 rounded-xl border-2 bg-gradient-to-b from-black/60 to-black text-[#FFD700] text-sm md:text-lg tracking-widest gap-3 group relative overflow-hidden"
                 style={{
                   borderColor: charColor,
-                  boxShadow: `0 0 15px ${charGlow}, inset 0 0 15px ${charGlow}`,
+                  boxShadow: `0 0 25px ${charGlow}, inset 0 0 20px ${charGlow}, 0 12px 30px rgba(255,107,0,0.25)`,
                   animation: `neon-pulse 2s ease-in-out infinite`,
                   ['--neon-color' as string]: charColor,
                 }}
               >
-                <ChevronRight size={22} className="opacity-60 group-hover:opacity-100" />
+                {/* Animated background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 -skew-x-12 group-hover:translate-x-full transition-all duration-700" />
+                
+                <ChevronRight size={22} className="opacity-60 group-hover:opacity-100 group-hover:animate-bounce" />
                 START GAME
-                <ChevronLeft size={22} className="opacity-60 group-hover:opacity-100" />
+                <ChevronLeft size={22} className="opacity-60 group-hover:opacity-100 group-hover:animate-bounce" style={{ animation: 'bounce 1s infinite 0.2s' }} />
               </motion.button>
             </div>
 
@@ -819,25 +838,38 @@ export default function ModimanGame() {
             </div>
 
             {/* Score bar */}
-            <div ref={scoreBarRef} className="flex flex-col items-center flex-shrink-0 px-4 py-1 z-50">
-              <div className="flex w-full max-w-[600px] items-center justify-between">
-                <div className="flex flex-col items-center">
+            <div ref={scoreBarRef} className="flex flex-col items-center flex-shrink-0 px-4 py-2 z-50 backdrop-blur-sm bg-black/30">
+              <div className="flex w-full max-w-[600px] items-center justify-between gap-4">
+                <motion.div 
+                  className="flex flex-col items-center"
+                  animate={{ scale: score > scoreRef.current ? [1, 1.1, 1] : 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <span className="chunky-text text-[8px] text-[#FF6B00]/70 tracking-wider">SCORE</span>
-                  <span className="chunky-text text-sm text-white tabular-nums">{score.toString().padStart(6, '0')}</span>
-                </div>
-                <div className="flex gap-1">
+                  <span className="chunky-text text-sm text-[#FFD700] tabular-nums drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">{score.toString().padStart(6, '0')}</span>
+                </motion.div>
+                <div className="flex gap-1.5">
                   {[...Array(3)].map((_, i) => (
-                    <Heart
+                    <motion.div
                       key={i}
-                      size={14}
-                      className={i < lives ? 'text-[#FF0044] fill-[#FF0044] drop-shadow-[0_0_6px_#FF0044]' : 'text-gray-800'}
-                    />
+                      animate={{ scale: i >= lives ? [1, 0.8] : 1 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Heart
+                        size={16}
+                        className={i < lives ? 'text-[#FF0044] fill-[#FF0044] drop-shadow-[0_0_8px_#FF0044]' : 'text-gray-800'}
+                      />
+                    </motion.div>
                   ))}
                 </div>
-                <div className="flex flex-col items-center">
+                <motion.div 
+                  className="flex flex-col items-center"
+                  animate={{ scale: score > hiScore ? [1, 1.1, 1] : 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   <span className="chunky-text text-[8px] text-[#00E5FF]/70 tracking-wider">HI-SCORE</span>
-                  <span className="chunky-text text-sm text-white tabular-nums">{hiScore.toString().padStart(6, '0')}</span>
-                </div>
+                  <span className="chunky-text text-sm text-[#00E5FF] tabular-nums drop-shadow-[0_0_10px_rgba(0,229,255,0.5)]">{hiScore.toString().padStart(6, '0')}</span>
+                </motion.div>
               </div>
             </div>
 
@@ -856,46 +888,63 @@ export default function ModimanGame() {
             </div>
 
             {/* D-Pad (mobile only) */}
-            <div ref={dpadRef} className="md:hidden flex w-full items-center justify-center p-2 flex-shrink-0 z-50 bg-black/40 backdrop-blur-sm">
-              <div className="grid grid-cols-3 grid-rows-3 gap-2">
+            <div ref={dpadRef} className="md:hidden flex w-full items-center justify-center p-3 flex-shrink-0 z-50 bg-gradient-to-t from-black/60 via-black/40 to-transparent backdrop-blur-sm">
+              <div className="grid grid-cols-3 grid-rows-3 gap-2.5">
                 <div className="col-start-2">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => handleDirection('UP')}
-                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-black/80 transition-all active:scale-90"
-                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 8px ${charGlow}` }}
+                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-gradient-to-b from-black/80 to-black/90 transition-all group relative overflow-hidden"
+                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 12px ${charGlow}` }}
                   >
-                    <ArrowUp size={28} />
-                  </button>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowUp size={24} className="relative z-10" />
+                  </motion.button>
                 </div>
                 <div className="col-start-1 row-start-2">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => handleDirection('LEFT')}
-                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-black/80 transition-all active:scale-90"
-                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 8px ${charGlow}` }}
+                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-gradient-to-b from-black/80 to-black/90 transition-all group relative overflow-hidden"
+                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 12px ${charGlow}` }}
                   >
-                    <ArrowLeft size={28} />
-                  </button>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowLeft size={24} className="relative z-10" />
+                  </motion.button>
                 </div>
                 <div className="col-start-2 row-start-2 flex items-center justify-center">
-                  <div className="h-5 w-5 rounded-full" style={{ backgroundColor: `${charColor}33`, boxShadow: `0 0 8px ${charGlow}` }} />
+                  <motion.div
+                    animate={{ scale: [1, 1.15, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="h-6 w-6 rounded-full"
+                    style={{ backgroundColor: `${charColor}44`, boxShadow: `0 0 12px ${charGlow}, inset 0 0 8px ${charGlow}` }}
+                  />
                 </div>
                 <div className="col-start-3 row-start-2">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => handleDirection('RIGHT')}
-                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-black/80 transition-all active:scale-90"
-                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 8px ${charGlow}` }}
+                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-gradient-to-b from-black/80 to-black/90 transition-all group relative overflow-hidden"
+                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 12px ${charGlow}` }}
                   >
-                    <ArrowRight size={28} />
-                  </button>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight size={24} className="relative z-10" />
+                  </motion.button>
                 </div>
                 <div className="col-start-2 row-start-3">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => handleDirection('DOWN')}
-                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-black/80 transition-all active:scale-90"
-                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 8px ${charGlow}` }}
+                    className="flex h-14 w-14 items-center justify-center rounded-xl border-2 bg-gradient-to-b from-black/80 to-black/90 transition-all group relative overflow-hidden"
+                    style={{ borderColor: charColor, color: charColor, boxShadow: `0 0 12px ${charGlow}` }}
                   >
-                    <ArrowDown size={28} />
-                  </button>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowDown size={24} className="relative z-10" />
+                  </motion.button>
                 </div>
               </div>
             </div>
